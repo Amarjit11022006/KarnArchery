@@ -1,0 +1,384 @@
+/* ==========================================================================
+   KARNARCHERY - Main Stylesheet
+   Ancient Indian / Mahabharata Royal UI Architecture
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;700;800;900&family=Marcellus&family=Cormorant+Garamond:wght@600;700&family=Rajdhani:wght@500;600;700&display=swap');
+
+:root {
+  /* Ancient Indian / Mahabharata Palette */
+  --royal-gold: #D4A64A;
+  --royal-gold-bright: #F7D78A;
+  --antique-gold: #A87932;
+  --antique-gold-deep: #7D551E;
+  --dark-bronze: #382719;
+  --bronze-deep: #251910;
+  --bronze-darkest: #170F0A;
+  --crimson: #8E2028;
+  --crimson-bright: #B52B35;
+  --crimson-deep: #5A1218;
+  --deep-navy: #111A27;
+  --navy-darker: #0B111A;
+  --navy-darkest: #05080E;
+  --warm-ivory: #F5E6C8;
+  --ivory-bright: #FFF9ED;
+  --ivory-muted: #D9C5A0;
+  --copper: #A65E36;
+  --copper-light: #C47648;
+  
+  /* System Values */
+  --font-title: 'Cinzel Decorative', 'Cinzel', serif;
+  --font-sub: 'Marcellus', 'Cinzel', serif;
+  --font-body: 'Marcellus', serif;
+  --font-hud: 'Rajdhani', sans-serif;
+  
+  --shadow-gold: 0 0 22px rgba(212, 166, 74, 0.45);
+  --shadow-gold-subtle: 0 0 12px rgba(212, 166, 74, 0.25);
+  --shadow-crimson: 0 0 20px rgba(142, 32, 40, 0.55);
+  --border-gold: 1px solid rgba(212, 166, 74, 0.45);
+  --border-gold-ornate: 2px solid var(--royal-gold);
+  
+  --bg-panel: rgba(17, 26, 39, 0.92);
+  --bg-panel-dark: rgba(11, 17, 26, 0.96);
+  --bg-bronze-plate: linear-gradient(180deg, #382719 0%, #251910 60%, #170F0A 100%);
+  
+  --transition-fast: 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--navy-darkest);
+  color: var(--warm-ivory);
+  font-family: var(--font-sub);
+  touch-action: none;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* 3D WebGL Canvas */
+#webgl-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 1;
+  outline: none;
+}
+
+/* ==========================================================================
+   Royal Ancient Ornate Border Panels
+   ========================================================================== */
+.ornate-border {
+  position: relative;
+  border: 1px solid var(--antique-gold);
+  background: var(--bg-panel);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.8), 
+              inset 0 0 30px rgba(212, 166, 74, 0.08),
+              inset 0 1px 1px rgba(245, 230, 200, 0.25);
+  border-radius: 2px;
+}
+
+/* Ancient Indian Temple Bracket Corners */
+.ornate-border::before, .ornate-border::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--royal-gold);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ornate-border::before {
+  top: -3px;
+  left: -3px;
+  border-right: none;
+  border-bottom: none;
+  box-shadow: -1px -1px 4px rgba(212, 166, 74, 0.4);
+}
+
+.ornate-border::after {
+  bottom: -3px;
+  right: -3px;
+  border-left: none;
+  border-top: none;
+  box-shadow: 1px 1px 4px rgba(212, 166, 74, 0.4);
+}
+
+/* ==========================================================================
+   Ancient Indian Royal Buttons (.btn-mythic)
+   ========================================================================== */
+.btn-mythic {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 32px;
+  font-family: var(--font-sub);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--warm-ivory);
+  background: linear-gradient(180deg, #382719 0%, #251910 50%, #1A110B 100%);
+  border: 1px solid var(--antique-gold);
+  border-radius: 3px;
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), 
+              inset 0 1px 1px rgba(212, 166, 74, 0.35), 
+              inset 0 -2px 4px rgba(0, 0, 0, 0.8);
+  transition: all var(--transition-fast);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(212, 166, 74, 0.2);
+}
+
+/* Inner Carved Metallic Bevel */
+.btn-mythic::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border: 1px solid rgba(212, 166, 74, 0.22);
+  pointer-events: none;
+  border-radius: 1px;
+}
+
+/* Golden Light Sweep Beam on Hover */
+.btn-mythic::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 240, 189, 0.25), transparent);
+  transition: 0.5s ease-in-out;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.btn-mythic:hover {
+  color: var(--ivory-bright);
+  border-color: var(--royal-gold);
+  background: linear-gradient(180deg, #44301F 0%, #2D1E13 50%, #20150E 100%);
+  box-shadow: 0 0 18px rgba(212, 166, 74, 0.45),
+              0 6px 20px rgba(0, 0, 0, 0.8),
+              inset 0 1px 2px rgba(245, 230, 200, 0.5);
+  transform: translateY(-2px);
+  text-shadow: 0 0 10px rgba(212, 166, 74, 0.6), 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.btn-mythic:hover::before {
+  left: 120%;
+}
+
+.btn-mythic:hover::after {
+  border-color: rgba(212, 166, 74, 0.55);
+}
+
+.btn-mythic:active {
+  transform: translateY(1px);
+  background: linear-gradient(180deg, #1C120B 0%, #251910 100%);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.95),
+              0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.btn-mythic:focus-visible {
+  outline: 2px solid var(--royal-gold);
+  outline-offset: 2px;
+}
+
+.btn-mythic:disabled, .btn-mythic.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+  box-shadow: none;
+}
+
+/* Primary Royal Golden Seal Button ("Start Journey", "Enter Realm", "Next") */
+.btn-mythic.primary {
+  background: linear-gradient(180deg, #E2B95C 0%, #D4A64A 35%, #A87932 75%, #7A531C 100%);
+  border: 1px solid #FFE4A0;
+  color: #1A110B;
+  font-weight: 700;
+  text-shadow: 0 1px 0 rgba(255, 248, 230, 0.6);
+  box-shadow: 0 4px 18px rgba(212, 166, 74, 0.55),
+              inset 0 1px 2px #FFF9ED,
+              inset 0 -2px 4px rgba(78, 50, 15, 0.6);
+}
+
+.btn-mythic.primary::after {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.btn-mythic.primary:hover {
+  background: linear-gradient(180deg, #F5D278 0%, #DDB052 40%, #B88539 80%, #8C6022 100%);
+  color: #0E0905;
+  border-color: #FFF2C7;
+  box-shadow: 0 0 25px rgba(245, 185, 66, 0.8),
+              0 6px 22px rgba(0, 0, 0, 0.7),
+              inset 0 1px 3px #FFFFFF;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.btn-mythic.primary:active {
+  background: linear-gradient(180deg, #8C6022 0%, #B88539 60%, #DDB052 100%);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Crimson Royal Seal Button ("Challenge Mode", "Quit") */
+.btn-mythic.crimson {
+  background: linear-gradient(180deg, #8E2028 0%, #68151B 50%, #440D12 100%);
+  border-color: #C0434C;
+  color: var(--warm-ivory);
+  box-shadow: 0 4px 16px rgba(142, 32, 40, 0.5),
+              inset 0 1px 1px rgba(245, 160, 166, 0.4),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.btn-mythic.crimson::after {
+  border-color: rgba(220, 100, 110, 0.3);
+}
+
+.btn-mythic.crimson:hover {
+  background: linear-gradient(180deg, #AB2832 0%, #7D1B22 50%, #521117 100%);
+  border-color: #E26871;
+  color: #FFFFFF;
+  box-shadow: 0 0 22px rgba(181, 43, 53, 0.7),
+              0 6px 20px rgba(0, 0, 0, 0.7),
+              inset 0 1px 2px #FFA8AF;
+}
+
+.btn-mythic.crimson:active {
+  background: linear-gradient(180deg, #440D12 0%, #68151B 100%);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* ==========================================================================
+   Modals & Popups Architecture
+   ========================================================================== */
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 8, 14, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+.modal-overlay:not(.active) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.modal-overlay.active {
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 680px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 38px 42px;
+  background: linear-gradient(180deg, rgba(17, 26, 39, 0.96) 0%, rgba(11, 17, 26, 0.98) 100%);
+  border: 1px solid var(--antique-gold);
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.85), var(--shadow-gold-subtle);
+  transform: scale(0.94);
+  transition: transform var(--transition-normal);
+}
+
+.modal-overlay.active .modal-content {
+  transform: scale(1);
+}
+
+.modal-title {
+  font-family: var(--font-title);
+  color: var(--royal-gold-bright);
+  font-size: 26px;
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 24px;
+  text-shadow: 0 0 16px rgba(212, 166, 74, 0.5);
+  position: relative;
+  padding-bottom: 16px;
+}
+
+/* Vedic Ornamental Separator with Central Sun Diamond */
+.modal-title::after {
+  content: '❖';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--royal-gold);
+  font-size: 14px;
+  text-shadow: 0 0 10px var(--royal-gold);
+  background: var(--navy-darker);
+  padding: 0 8px;
+}
+
+.modal-title::before {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--royal-gold), transparent);
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--navy-darkest);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--antique-gold);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--royal-gold);
+}

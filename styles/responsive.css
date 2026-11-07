@@ -1,0 +1,379 @@
+/* ==========================================================================
+   KARNARCHERY - Responsive & Mobile Controls Stylesheet
+   Ancient Indian / Mahabharata Royal UI Architecture
+   ========================================================================== */
+
+/* Mobile Touch Controls Overlay */
+.mobile-controls {
+  display: none !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.mobile-controls.hidden {
+  display: none !important;
+  pointer-events: none !important;
+}
+
+.mobile-controls:not(.hidden) {
+  display: block !important;
+}
+
+/* ==========================================================================
+   Ancient Royal Warrior Shield / Chakra Shoot Control
+   ========================================================================== */
+.mobile-shoot-btn {
+  position: absolute;
+  bottom: 28px;
+  right: 28px;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #4A3422 0%, #382719 45%, #251910 80%, #170F0A 100%);
+  border: 3px solid var(--royal-gold);
+  box-shadow: 0 0 24px rgba(212, 166, 74, 0.5),
+              0 8px 24px rgba(0, 0, 0, 0.8),
+              inset 0 2px 4px rgba(247, 215, 138, 0.5),
+              inset 0 -3px 8px rgba(0, 0, 0, 0.9);
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--warm-ivory);
+  font-family: var(--font-title);
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.12s ease, filter 0.12s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Concentric Etched Chakra Ring */
+.mobile-shoot-btn::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  border: 1.5px dashed rgba(247, 215, 138, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Inner Studded Ring */
+.mobile-shoot-btn::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid rgba(212, 166, 74, 0.25);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.mobile-shoot-btn:hover {
+  box-shadow: 0 0 32px rgba(212, 166, 74, 0.75),
+              0 10px 28px rgba(0, 0, 0, 0.9),
+              inset 0 0 12px rgba(247, 215, 138, 0.4);
+  transform: scale(1.04);
+}
+
+.mobile-shoot-btn:active, .mobile-shoot-btn.active {
+  transform: scale(0.92);
+  filter: brightness(1.2);
+  background: radial-gradient(circle at 45% 45%, #E2B95C 0%, #D4A64A 35%, #8C6022 80%, #382719 100%);
+  color: #170F0A;
+  box-shadow: 0 0 35px var(--royal-gold-bright),
+              0 0 15px #FFFFFF,
+              inset 0 3px 6px rgba(0, 0, 0, 0.8);
+}
+
+.mobile-shoot-btn .shoot-icon {
+  width: 22px;
+  height: 22px;
+  fill: var(--royal-gold-bright);
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
+  margin-bottom: 2px;
+  transition: fill 0.12s ease;
+  z-index: 1;
+}
+
+.mobile-shoot-btn:active .shoot-icon, .mobile-shoot-btn.active .shoot-icon {
+  fill: #170F0A;
+}
+
+.mobile-shoot-btn span {
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
+}
+
+.mobile-aim-zone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70%;
+  height: 100%;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+/* ==========================================================================
+   Tablet Screens (<= 1024px)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  #menu-container {
+    padding: 30px 40px;
+  }
+  
+  .game-title {
+    font-size: 38px;
+    letter-spacing: 5px;
+  }
+  
+  .menu-nav {
+    width: 290px;
+  }
+  
+  .chapters-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .chapters-screen-grid, .levels-screen-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  
+  .levels-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .customization-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+/* ==========================================================================
+   Mobile Screens (<= 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .mobile-controls.hidden {
+    display: none !important;
+  }
+  
+  .mobile-controls:not(.hidden) {
+    display: block !important;
+  }
+  
+  #menu-container {
+    padding: 20px 24px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .menu-header {
+    align-items: center;
+  }
+  
+  .brand-wrapper {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .brand-logo-img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .game-title {
+    font-size: 30px;
+    letter-spacing: 4px;
+  }
+  
+  .game-tagline {
+    font-size: 11px;
+    border-left: none;
+    border-top: 1px solid var(--crimson-bright);
+    padding-left: 0;
+    padding-top: 8px;
+  }
+  
+  .menu-nav {
+    width: 100%;
+    max-width: 300px;
+    margin: 16px auto;
+  }
+
+  .btn-mythic {
+    padding: 12px 24px;
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+  
+  .menu-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .warrior-status-card {
+    width: 100%;
+    max-width: 320px;
+  }
+  
+  /* HUD Mobile Adjustments */
+  #hud-container {
+    padding: 12px 14px;
+  }
+  
+  .hud-top-bar {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  
+  .hud-mission-banner {
+    max-width: 100%;
+    padding: 8px 14px;
+  }
+
+  .mission-objective-text {
+    font-size: 12px;
+  }
+  
+  .hud-score-panel {
+    justify-content: space-around;
+    padding: 6px 14px;
+    gap: 14px;
+  }
+
+  .hud-value-large {
+    font-size: 22px;
+  }
+  
+  .hud-bottom-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .hud-bottom-left {
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .hud-wind-card, .hud-distance-card, .hud-quiver-card {
+    padding: 6px 10px;
+  }
+  
+  .hud-bottom-right {
+    justify-content: space-between;
+  }
+
+  .hud-action-btn {
+    padding: 8px 12px;
+    font-size: 10px;
+    letter-spacing: 1px;
+  }
+  
+  .chapters-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .chapters-screen-grid, .levels-screen-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  
+  .screen-container {
+    padding: 20px 16px;
+  }
+  
+  .screen-title {
+    font-size: 26px;
+    letter-spacing: 3px;
+  }
+  
+  .levels-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .modal-content {
+    padding: 24px 20px;
+  }
+
+  .modal-title {
+    font-size: 20px;
+  }
+}
+
+/* ==========================================================================
+   Small Phones (<= 480px)
+   ========================================================================== */
+@media (max-width: 480px) {
+  .game-title {
+    font-size: 24px;
+    letter-spacing: 3px;
+  }
+
+  .chapters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chapters-screen-grid, .levels-screen-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .mobile-shoot-btn {
+    width: 76px;
+    height: 76px;
+    bottom: 20px;
+    right: 20px;
+  }
+}
+
+/* Portrait Warning on Mobile Devices */
+@media (max-width: 600px) and (orientation: portrait) {
+  .portrait-hint {
+    display: block;
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(23, 15, 10, 0.96) 0%, rgba(17, 26, 39, 0.98) 100%);
+    border: 1px solid var(--royal-gold);
+    color: var(--royal-gold-bright);
+    padding: 8px 18px;
+    font-family: var(--font-title);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    z-index: 100;
+    pointer-events: none;
+    border-radius: 2px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.9), 0 0 12px rgba(212, 166, 74, 0.3);
+  }
+}
+
+.portrait-hint {
+  display: none;
+}

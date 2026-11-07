@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="KarnArchery - 3D Mythological Archery Adventure inspired by the Mahabharata. Born to Rise. Trained to Conquer. Destined to Become a Legend.">
+  <meta name="theme-color" content="#101C2B">
+  <title>KarnArchery - 3D Mythological Archery Game</title>
+  
+  <link rel="icon" type="image/png" href="./images/karnarchery-logo.png">
+  <link rel="stylesheet" href="./styles/main.css">
+  <link rel="stylesheet" href="./styles/menu.css">
+  <link rel="stylesheet" href="./styles/hud.css">
+  <link rel="stylesheet" href="./styles/responsive.css">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.170.0/build/three.module.js",
+      "three/": "https://unpkg.com/three@0.170.0/",
+      "matter-js": "https://cdn.jsdelivr.net/npm/matter-js@0.20.0/+esm"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <!-- 3D WebGL Canvas -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- Fullscreen Bullseye Flash Overlay -->
+    <div id="bullseye-flash" class="bullseye-flash"></div>
+
+    <!-- Floating Score Popups Container -->
+    <div id="score-popup-container" class="score-popup-container"></div>
+
+    <!-- Portrait orientation warning for mobile -->
+    <div class="portrait-hint">Landscape mode recommended for best archery experience 🏹</div>
+
+    <!-- ====================================================================
+         CINEMATIC LOADING SCREEN
+         ==================================================================== -->
+    <div id="loading-screen">
+      <div class="loading-backdrop"></div>
+      <div class="loading-content ornate-border">
+        <div class="loading-logo-wrap">
+          <div class="loading-sun-rays"></div>
+          <img src="./images/logo.png" alt="KarnArchery Logo" class="loading-logo" onerror="this.src='./images/karnarchery-logo.png'">
+        </div>
+        <h1 class="loading-title">KarnArchery</h1>
+        <p class="loading-tagline">Preparing the Legendary Journey...</p>
+
+        <div class="loading-bar-container">
+          <div class="loading-bar-track">
+            <div class="loading-bar-fill" id="loading-bar-fill"></div>
+          </div>
+          <div class="loading-status-row">
+            <span class="loading-status-text" id="loading-status-text">Summoning Sacred Weapons...</span>
+            <span class="loading-percent-text" id="loading-percent-text">0%</span>
+          </div>
+        </div>
+
+        <div id="loading-retry-container" style="display: none; margin-top: 18px;">
+          <p style="color: #FF5252; font-size: 13px; margin-bottom: 12px;" id="loading-error-msg">Awakening failed</p>
+          <button id="btn-loading-retry" type="button" class="btn-mythic primary">Retry Journey</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         CINEMATIC MAIN MENU
+         ==================================================================== -->
+    <div id="menu-container" class="hidden">
+      <header class="menu-header">
+        <div class="brand-wrapper">
+          <img src="./images/logo.png" alt="KarnArchery Logo" class="brand-logo-img" id="main-logo-img" onerror="this.src='./images/karnarchery-logo.png'">
+          <div class="title-group">
+            <h1 class="game-title">KarnArchery</h1>
+            <p class="game-tagline">Born to Rise. Trained to Conquer. Destined to Become a Legend.</p>
+          </div>
+        </div>
+      </header>
+
+      <nav class="menu-nav">
+        <button id="btn-start-journey" type="button" class="btn-mythic primary">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          Start Journey
+        </button>
+        <button id="btn-continue-story" type="button" class="btn-mythic">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+          Continue Story
+        </button>
+        <button id="btn-training-ground" type="button" class="btn-mythic">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+          Training Ground
+        </button>
+        <button id="btn-challenge-mode" type="button" class="btn-mythic crimson">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+          Challenge Mode
+        </button>
+        <button id="btn-customization" type="button" class="btn-mythic">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83zM3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
+          Archer Customization
+        </button>
+        <button id="btn-settings" type="button" class="btn-mythic">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          Settings
+        </button>
+        <button id="btn-restart-game" type="button" class="btn-mythic crimson">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6.76.74L3.78 7.2C3.29 8.64 3 10.28 3 12c0 4.97 4.03 9 9 9v4l5-5-5-5v4c-3.87 0-7-3.13-7-7 0-1.34.3-2.61.84-3.74z"/></svg>
+          Restart Game
+        </button>
+        <button id="btn-credits" type="button" class="btn-mythic">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          Credits
+        </button>
+      </nav>
+
+      <footer class="menu-footer">
+        <div class="warrior-status-card">
+          <div class="status-avatar">
+            <img src="./images/archer-avatar.png" alt="Karna Avatar" onerror="this.src='./images/karna.png'">
+          </div>
+          <div class="status-info">
+            <span class="status-name" id="status-warrior-name">Suryaputra Warrior</span>
+            <div class="status-stats">
+              <span id="status-bow-name">Training Bow</span>
+              <span class="gold-coins">🪙 <span id="status-coins">0</span></span>
+              <span>⭐ <span id="status-total-stars">0</span>/75</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-version-badge">
+          <span>v1.0.0 • Three.js 3D Engine</span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ====================================================================
+         CHAPTER SELECTION SCREEN (Full Screen Interface)
+         ==================================================================== -->
+    <div id="chapter-select-screen" class="screen-container hidden">
+      <div class="screen-header">
+        <h2 class="screen-title">Chronicles of Mahabharata</h2>
+        <p class="screen-subtitle">Choose a Chapter in Karna's Sacred Journey to Archery Immortality</p>
+      </div>
+
+      <div class="chapters-screen-grid" id="chapters-screen-grid">
+        <!-- Rendered dynamically by NavigationManager -->
+      </div>
+
+      <div class="screen-footer">
+        <button id="btn-back-to-home" class="btn-mythic">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Back to Main Menu
+        </button>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         LEVEL SELECTION SCREEN (Full Screen Interface)
+         ==================================================================== -->
+    <div id="level-select-screen" class="screen-container hidden">
+      <div class="screen-header">
+        <h2 class="screen-title" id="level-screen-heading">Chapter 1: The Beginning</h2>
+        <p class="screen-subtitle" id="level-screen-subheading">Gurukul Training Grounds</p>
+        <div class="chapter-star-counter" id="level-screen-progress">⭐ 0/15 Stars Earned</div>
+      </div>
+
+      <div class="levels-screen-grid" id="levels-screen-grid">
+        <!-- Rendered dynamically by NavigationManager -->
+      </div>
+
+      <div class="screen-footer">
+        <button id="btn-back-to-chapters" class="btn-mythic primary">
+          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+          Back to Chapters
+        </button>
+        <button id="btn-levels-to-home" class="btn-mythic">
+          Main Menu
+        </button>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         CHALLENGE MODE MODAL
+         ==================================================================== -->
+    <div id="challenge-modal" class="modal-overlay">
+      <div class="modal-content ornate-border">
+        <h2 class="modal-title">Legendary Archery Challenges</h2>
+        <div class="chapters-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 24px;">
+          <div class="chapter-card" data-challenge="fish-eye">
+            <span class="chapter-num">CHALLENGE I</span>
+            <h4 class="chapter-title">Matsya Vedha (Fish Eye)</h4>
+            <p style="font-size: 11px; color: var(--sand-light);">Hit the rotating golden fish target through water reflection calculation.</p>
+            <button class="btn-mythic" style="margin-top: 8px; font-size: 11px; padding: 8px 16px;">Play Challenge</button>
+          </div>
+          <div class="chapter-card" data-challenge="chariot-assault">
+            <span class="chapter-num">CHALLENGE II</span>
+            <h4 class="chapter-title">Moving War Chariot</h4>
+            <p style="font-size: 11px; color: var(--sand-light);">Strike rapid moving targets mounted on galloping battlefield chariots.</p>
+            <button class="btn-mythic" style="margin-top: 8px; font-size: 11px; padding: 8px 16px;">Play Challenge</button>
+          </div>
+          <div class="chapter-card" data-challenge="darkness-trial">
+            <span class="chapter-num">CHALLENGE III</span>
+            <h4 class="chapter-title">The Darkness Trial</h4>
+            <p style="font-size: 11px; color: var(--sand-light);">Pitch black night. Targets revealed only by flickering torch braziers.</p>
+            <button class="btn-mythic" style="margin-top: 8px; font-size: 11px; padding: 8px 16px;">Play Challenge</button>
+          </div>
+          <div class="chapter-card" data-challenge="tempest-gale">
+            <span class="chapter-num">CHALLENGE IV</span>
+            <h4 class="chapter-title">The Himalayan Tempest</h4>
+            <p style="font-size: 11px; color: var(--sand-light);">Extreme 12 m/s shifting wind vectors test your ballistic compensation.</p>
+            <button class="btn-mythic" style="margin-top: 8px; font-size: 11px; padding: 8px 16px;">Play Challenge</button>
+          </div>
+        </div>
+        <div style="text-align: center;">
+          <button id="btn-close-challenge-modal" class="btn-mythic">Back to Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         ARCHER CUSTOMIZATION MODAL
+         ==================================================================== -->
+    <div id="customization-modal" class="modal-overlay">
+      <div class="modal-content ornate-border" style="max-width: 800px;">
+        <h2 class="modal-title">Warrior's Armory & Bows</h2>
+        
+        <div class="customization-grid">
+          <div>
+            <h3 style="color: var(--gold-bright); font-size: 16px; margin-bottom: 12px;">Select Bow</h3>
+            <div class="bow-select-list" id="bow-list-container">
+              <!-- Dynamically populated 5 Bows -->
+            </div>
+          </div>
+
+          <div class="bow-stats-panel ornate-border">
+            <h3 id="inspect-bow-name" style="color: var(--gold-bright); font-size: 18px;">Training Bow</h3>
+            <p id="inspect-bow-desc" style="font-size: 12px; color: var(--sand-light); line-height: 1.4;">
+              Handcrafted bamboo recurve bow used by disciples in the Gurukul.
+            </p>
+
+            <div class="stat-bar-group">
+              <div class="stat-header">
+                <span>Arrow Velocity</span>
+                <span id="stat-val-speed">45 m/s</span>
+              </div>
+              <div class="stat-bar-track"><div id="stat-bar-speed" class="stat-bar-fill" style="width: 45%;"></div></div>
+            </div>
+
+            <div class="stat-bar-group">
+              <div class="stat-header">
+                <span>Draw Speed</span>
+                <span id="stat-val-draw">1.0s</span>
+              </div>
+              <div class="stat-bar-track"><div id="stat-bar-draw" class="stat-bar-fill" style="width: 50%;"></div></div>
+            </div>
+
+            <div class="stat-bar-group">
+              <div class="stat-header">
+                <span>Wind Resistance</span>
+                <span id="stat-val-wind">70%</span>
+              </div>
+              <div class="stat-bar-track"><div id="stat-bar-wind" class="stat-bar-fill" style="width: 70%;"></div></div>
+            </div>
+
+            <button id="btn-equip-bow" class="btn-mythic primary" style="margin-top: 10px;">Equip Bow</button>
+          </div>
+
+          <div style="grid-column: 1 / -1; margin-top: 14px; border-top: 1px solid rgba(245, 185, 66, 0.2); padding-top: 16px; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 16px;">
+            <div>
+              <span class="setting-label" style="display: block; margin-bottom: 8px; font-size: 13px;">Armor Kavach Material:</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="armor-tint-buttons">
+                <button class="btn-mythic armor-btn" data-armor="gold" style="padding: 8px 14px; font-size: 11px;">Surya Gold</button>
+                <button class="btn-mythic armor-btn" data-armor="bronze" style="padding: 8px 14px; font-size: 11px;">Kshatriya Bronze</button>
+                <button class="btn-mythic armor-btn" data-armor="silver" style="padding: 8px 14px; font-size: 11px;">Royal Silver</button>
+                <button class="btn-mythic armor-btn" data-armor="obsidian" style="padding: 8px 14px; font-size: 11px;">Dark Obsidian</button>
+              </div>
+            </div>
+            <div>
+              <span class="setting-label" style="display: block; margin-bottom: 8px; font-size: 13px;">Cape Silk Color:</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="cape-color-buttons">
+                <button class="btn-mythic cape-btn" data-cape="crimson" style="padding: 8px 14px; font-size: 11px;">Crimson</button>
+                <button class="btn-mythic cape-btn" data-cape="saffron" style="padding: 8px 14px; font-size: 11px;">Saffron</button>
+                <button class="btn-mythic cape-btn" data-cape="navy" style="padding: 8px 14px; font-size: 11px;">Royal Navy</button>
+                <button class="btn-mythic cape-btn" data-cape="emerald" style="padding: 8px 14px; font-size: 11px;">Emerald</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px;">
+          <button id="btn-close-customization" class="btn-mythic">Back to Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         SETTINGS MODAL
+         ==================================================================== -->
+    <div id="settings-modal" class="modal-overlay">
+      <div class="modal-content ornate-border">
+        <h2 class="modal-title">Settings</h2>
+        
+        <div class="settings-list">
+          <div class="setting-row">
+            <span class="setting-label">Master Volume</span>
+            <div class="setting-control">
+              <input type="range" id="setting-master-vol" min="0" max="100" value="80">
+              <span class="range-val" id="val-master-vol">80%</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Music Volume</span>
+            <div class="setting-control">
+              <input type="range" id="setting-music-vol" min="0" max="100" value="65">
+              <span class="range-val" id="val-music-vol">65%</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Sound Effects (SFX)</span>
+            <div class="setting-control">
+              <input type="range" id="setting-sfx-vol" min="0" max="100" value="90">
+              <span class="range-val" id="val-sfx-vol">90%</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Aim Sensitivity</span>
+            <div class="setting-control">
+              <input type="range" id="setting-sensitivity" min="1" max="10" value="5">
+              <span class="range-val" id="val-sensitivity">5</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Camera Field of View</span>
+            <div class="setting-control">
+              <input type="range" id="setting-fov" min="50" max="85" value="65">
+              <span class="range-val" id="val-fov">65°</span>
+            </div>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Graphics Quality</span>
+            <div class="setting-control">
+              <select id="setting-quality" class="btn-mythic" style="padding: 8px 14px; font-size: 13px; text-transform: none; cursor: pointer;">
+                <option value="high" style="background:#101C2B; color:#FFD868;">High (PCF Soft Shadows, 60 FPS)</option>
+                <option value="medium" style="background:#101C2B; color:#FFD868;">Medium (Balanced)</option>
+                <option value="low" style="background:#101C2B; color:#FFD868;">Low (Max Performance / Mobile)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-reset-block" style="margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(245, 185, 66, 0.2); text-align: center;">
+          <h4 style="color: #FF5252; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Reset Game Progress</h4>
+          <p style="color: var(--sand-light); font-size: 12px; margin-bottom: 12px;">Reset all chapters, stars, and coins back to Level 1 while keeping your preferences.</p>
+          <button id="btn-settings-restart-game" type="button" class="btn-mythic crimson">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6.76.74L3.78 7.2C3.29 8.64 3 10.28 3 12c0 4.97 4.03 9 9 9v4l5-5-5-5v4c-3.87 0-7-3.13-7-7 0-1.34.3-2.61.84-3.74z"/></svg>
+            Restart Entire Game
+          </button>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px;">
+          <button id="btn-close-settings" class="btn-mythic">Save & Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         CREDITS MODAL
+         ==================================================================== -->
+    <div id="credits-modal" class="modal-overlay">
+      <div class="modal-content ornate-border" style="max-width: 600px; text-align: center;">
+        <h2 class="modal-title">KarnArchery</h2>
+        <p style="color: var(--gold-bright); font-size: 15px; margin-bottom: 12px; font-weight: 700;">
+          A 3D Mythological Archery Adventure
+        </p>
+        <p style="color: var(--sand-light); font-size: 13px; line-height: 1.6; margin-bottom: 20px;">
+          Inspired by the legendary archer Karna and the timeless epics of ancient India.<br>
+          Engineered with modern Three.js 3D rendering, custom vector projectile physics, and responsive controls.
+        </p>
+        
+        <div style="border-top: 1px solid rgba(245, 185, 66, 0.2); border-bottom: 1px solid rgba(245, 185, 66, 0.2); padding: 16px 0; margin-bottom: 24px; font-size: 12px; color: #FFFFFF;">
+          <p><strong>Architecture & Technical Direction:</strong> Senior 3D Game Engineer</p>
+          <p style="margin-top: 6px;"><strong>3D Graphics & Physics:</strong> Three.js & Custom Ballistic Engine</p>
+          <p style="margin-top: 6px;"><strong>Soundtrack & Audio:</strong> Procedural Mythological Web Audio Engine</p>
+        </div>
+
+        <button id="btn-close-credits" class="btn-mythic">Close</button>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         GAMEPLAY HUD
+         ==================================================================== -->
+    <div id="hud-container" class="hidden">
+      <!-- Top HUD Bar -->
+      <div class="hud-top-bar">
+        <div class="hud-mission-banner ornate-border">
+          <div class="mission-chapter-level" id="hud-chapter-level">Chapter 1 • Level 1</div>
+          <div class="mission-objective-text" id="hud-objective-text">Hit the target to score 150 points</div>
+        </div>
+
+        <div class="hud-score-panel ornate-border">
+          <div class="score-box">
+            <span class="hud-label">Score</span>
+            <span class="hud-value-large" id="hud-current-score">0</span>
+          </div>
+          <div class="target-score-box">
+            <span class="hud-label">Target</span>
+            <span class="hud-value-large" id="hud-target-score">150</span>
+          </div>
+          <div class="streak-indicator" id="hud-streak-box">
+            🔥 STREAK x<span id="hud-streak-val">2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center Reticle / Crosshair -->
+      <div id="hud-crosshair" class="hud-center-crosshair">
+        <div class="crosshair-ring"></div>
+        <div class="crosshair-center-dot"></div>
+        <div class="crosshair-line top"></div>
+        <div class="crosshair-line bottom"></div>
+        <div class="crosshair-line left"></div>
+        <div class="crosshair-line right"></div>
+      </div>
+
+      <!-- Aiming Assist Predicted Impact Pip -->
+      <div id="hud-impact-pip" class="hud-impact-pip hidden"></div>
+
+      <!-- Power Charge Gauge (Visible while drawing) -->
+      <div id="hud-power-gauge" class="hud-power-gauge-wrap">
+        <div class="power-track">
+          <div id="hud-power-fill" class="power-fill"></div>
+        </div>
+        <span id="hud-power-text" class="power-text">0%</span>
+      </div>
+
+      <!-- Bottom HUD Bar -->
+      <div class="hud-bottom-bar">
+        <div class="hud-bottom-left">
+          <!-- Wind Dial -->
+          <div class="hud-wind-card ornate-border">
+            <div class="wind-compass-dial">
+              <div id="hud-wind-arrow" class="wind-compass-arrow"></div>
+            </div>
+            <div class="wind-text-group">
+              <span class="hud-label">Wind</span>
+              <span id="hud-wind-speed" class="wind-speed-val">0.0 m/s</span>
+            </div>
+          </div>
+
+          <!-- Distance Readout -->
+          <div class="hud-distance-card ornate-border">
+            <span class="hud-label">Distance</span>
+            <span id="hud-target-distance" class="distance-val">25.0m</span>
+          </div>
+
+          <!-- Quiver Arrows Count -->
+          <div class="hud-quiver-card ornate-border">
+            <span class="hud-label">Quiver</span>
+            <div class="arrow-icon-group" id="hud-arrow-pips">
+              <!-- Rendered arrow pips -->
+            </div>
+            <span id="hud-arrow-count" class="arrow-count-text">5 / 5 Remaining</span>
+          </div>
+        </div>
+
+        <div class="hud-bottom-right">
+          <button id="btn-switch-camera" class="hud-action-btn">
+            <span class="btn-key-badge">C</span>
+            <span id="camera-mode-label">First Person</span>
+          </button>
+          <button id="btn-restart-level" class="hud-action-btn">
+            <span class="btn-key-badge">R</span>
+            <span>Restart</span>
+          </button>
+          <button id="btn-pause-game" class="hud-action-btn">
+            <span class="btn-key-badge">ESC</span>
+            <span>Pause</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         MOBILE TOUCH CONTROLS
+         ==================================================================== -->
+    <div id="mobile-controls" class="mobile-controls hidden">
+      <div id="mobile-aim-zone" class="mobile-aim-zone"></div>
+      <button id="mobile-shoot-btn" type="button" class="mobile-shoot-btn">
+        <svg class="shoot-icon" viewBox="0 0 24 24"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm0 4c2.21 0 4 1.79 4 4 0 1.25-.57 2.37-1.47 3.09l-2.53 4.91-2.53-4.91C8.57 12.37 8 11.25 8 10c0-2.21 1.79-4 4-4z"/></svg>
+        Draw
+      </button>
+    </div>
+
+    <!-- ====================================================================
+         LEVEL RESULT MODAL (VICTORY / DEFEAT)
+         ==================================================================== -->
+    <div id="result-modal" class="modal-overlay">
+      <div class="modal-content ornate-border">
+        <h2 id="result-title" class="modal-title">Victory!</h2>
+        
+        <div class="result-stars-row">
+          <span class="result-star" id="result-star-1">★</span>
+          <span class="result-star" id="result-star-2">★</span>
+          <span class="result-star" id="result-star-3">★</span>
+        </div>
+
+        <div class="result-stats-table">
+          <div class="result-row">
+            <span>Score Achieved:</span>
+            <span id="result-score" class="result-row-val">320</span>
+          </div>
+          <div class="result-row">
+            <span>Target Score:</span>
+            <span id="result-target-score" class="result-row-val">200</span>
+          </div>
+          <div class="result-row">
+            <span>Accuracy:</span>
+            <span id="result-accuracy" class="result-row-val">100%</span>
+          </div>
+          <div class="result-row">
+            <span>Bullseyes:</span>
+            <span id="result-bullseyes" class="result-row-val">2</span>
+          </div>
+          <div class="result-row">
+            <span>Gold Coins Earned:</span>
+            <span id="result-coins" class="result-row-val" style="color: var(--gold-bright);">+50 🪙</span>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button id="btn-result-next" class="btn-mythic primary">Next Level</button>
+          <button id="btn-result-retry" class="btn-mythic">Retry</button>
+          <button id="btn-result-levels" class="btn-mythic">Level Select</button>
+          <button id="btn-result-menu" class="btn-mythic">Main Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         PAUSE MENU MODAL
+         ==================================================================== -->
+    <div id="pause-modal" class="modal-overlay">
+      <div class="modal-content ornate-border" style="max-width: 400px; text-align: center;">
+        <h2 class="modal-title">Game Paused</h2>
+        <div style="display: flex; flex-direction: column; gap: 14px; margin: 24px 0;">
+          <button id="btn-pause-resume" class="btn-mythic primary">Resume</button>
+          <button id="btn-pause-restart" class="btn-mythic">Restart Level</button>
+          <button id="btn-pause-restart-game" class="btn-mythic crimson">Restart Entire Game</button>
+          <button id="btn-pause-settings" class="btn-mythic">Settings</button>
+          <button id="btn-pause-menu" class="btn-mythic">Quit to Menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         CONFIRM COMPLETE GAME RESET MODAL
+         ==================================================================== -->
+    <div id="confirm-reset-modal" class="modal-overlay">
+      <div class="modal-content ornate-border" style="max-width: 440px; text-align: center;">
+        <div style="font-size: 32px; margin-bottom: 6px;">🏹</div>
+        <h2 class="modal-title" style="color: #FF5252;">Restart Game?</h2>
+        <p id="confirm-reset-message" style="color: var(--sand-light); font-size: 14px; line-height: 1.6; margin: 16px 0 24px 0;">
+          Are you sure you want to restart the entire game? All progress will be lost.
+        </p>
+        <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+          <button id="btn-cancel-reset" type="button" class="btn-mythic">Cancel</button>
+          <button id="btn-confirm-reset" type="button" class="btn-mythic crimson">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm-6.76.74L3.78 7.2C3.29 8.64 3 10.28 3 12c0 4.97 4.03 9 9 9v4l5-5-5-5v4c-3.87 0-7-3.13-7-7 0-1.34.3-2.61.84-3.74z"/></svg>
+            Restart Game
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
+

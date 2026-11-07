@@ -1,0 +1,18 @@
+{
+  "name": "karnarchery",
+  "version": "1.0.0",
+  "description": "KarnArchery - 3D Mythological Archery Browser Game inspired by the Mahabharata",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "matter-js": "^0.20.0",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}
