@@ -40,6 +40,7 @@ export class CameraManager {
 
     this.handleResize = this.handleResize.bind(this);
     window.addEventListener('resize', this.handleResize);
+    window.addEventListener('orientationchange', () => setTimeout(this.handleResize, 150));
   }
 
   handleResize() {

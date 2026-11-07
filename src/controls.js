@@ -134,19 +134,39 @@ export class ControlsManager {
   bindMobileEvents() {
     const aimZone = document.getElementById('mobile-aim-zone') || this.canvas;
     const shootBtn = document.getElementById('mobile-shoot-btn');
+    const dropBtn = document.getElementById('mobile-drop-btn');
+    const camBtn = document.getElementById('mobile-cam-btn');
+    const pauseBtn = document.getElementById('mobile-pause-btn');
+    const restartBtn = document.getElementById('mobile-restart-btn');
 
+    let activeAimTouchId = null;
+
+    // --- 1. Multi-Touch Isolated Aim Zone ---
     aimZone.addEventListener('touchstart', (e) => {
       this.lastTouchTime = Date.now();
       if (!this.isEnabled) return;
-      const touch = e.touches[0];
+      if (this.isTouchAiming) return; // Keep aiming tracked on first finger
+
+      const touch = e.changedTouches[0];
+      activeAimTouchId = touch.identifier;
       this.touchStartPos = { x: touch.clientX, y: touch.clientY };
       this.isTouchAiming = true;
+      e.preventDefault();
     }, { passive: false });
 
     aimZone.addEventListener('touchmove', (e) => {
       this.lastTouchTime = Date.now();
       if (!this.isEnabled || !this.isTouchAiming) return;
-      const touch = e.touches[0];
+
+      let touch = null;
+      for (let i = 0; i < e.touches.length; i++) {
+        if (e.touches[i].identifier === activeAimTouchId) {
+          touch = e.touches[i];
+          break;
+        }
+      }
+      if (!touch) return;
+
       const deltaX = (touch.clientX - this.touchStartPos.x) * 1.6;
       const deltaY = (touch.clientY - this.touchStartPos.y) * 1.6;
       this.touchStartPos = { x: touch.clientX, y: touch.clientY };
@@ -157,26 +177,135 @@ export class ControlsManager {
       e.preventDefault();
     }, { passive: false });
 
-    aimZone.addEventListener('touchend', () => {
-      this.isTouchAiming = false;
-    });
+    const endAimTouch = (e) => {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === activeAimTouchId) {
+          this.isTouchAiming = false;
+          activeAimTouchId = null;
+          break;
+        }
+      }
+    };
+    aimZone.addEventListener('touchend', endAimTouch);
+    aimZone.addEventListener('touchcancel', endAimTouch);
 
+    // --- 2. Shoot Button (Hold to Draw, Release to Shoot) ---
     if (shootBtn) {
       shootBtn.addEventListener('touchstart', (e) => {
         this.lastTouchTime = Date.now();
         if (!this.isEnabled) return;
         e.preventDefault();
+        e.stopPropagation();
         shootBtn.classList.add('active');
         this.startDraw();
       }, { passive: false });
 
-      shootBtn.addEventListener('touchend', (e) => {
+      const releaseHandler = (e) => {
         this.lastTouchTime = Date.now();
         if (!this.isEnabled) return;
         e.preventDefault();
+        e.stopPropagation();
         shootBtn.classList.remove('active');
         this.releaseShoot();
-      }, { passive: false });
+      };
+
+      shootBtn.addEventListener('touchend', releaseHandler, { passive: false });
+      shootBtn.addEventListener('touchcancel', releaseHandler, { passive: false });
+    }
+
+    // --- 3. Dedicated Drop Arrow Button (Mobile/Tablet Only) ---
+    if (dropBtn) {
+      let lastDropTime = 0;
+      const handleDrop = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        if (Date.now() - lastDropTime < 350) return;
+        lastDropTime = Date.now();
+        this.lastTouchTime = Date.now();
+
+        if (!this.isEnabled || dropBtn.disabled || dropBtn.classList.contains('disabled')) return;
+
+        // Cancel any active draw power to avoid double firing
+        if (this.isDrawing) {
+          this.cancelDraw();
+        }
+
+        dropBtn.classList.add('active');
+        setTimeout(() => dropBtn.classList.remove('active'), 200);
+
+        if (this.callbacks.onDropArrow) {
+          this.callbacks.onDropArrow();
+        }
+      };
+
+      dropBtn.addEventListener('touchstart', handleDrop, { passive: false });
+      dropBtn.addEventListener('click', handleDrop);
+    }
+
+    // --- 4. Camera Switch Button (FPS/TPS Toggle) ---
+    if (camBtn) {
+      let lastCamTime = 0;
+      const handleCam = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        if (Date.now() - lastCamTime < 250) return;
+        lastCamTime = Date.now();
+        this.lastTouchTime = Date.now();
+
+        camBtn.classList.add('active');
+        setTimeout(() => camBtn.classList.remove('active'), 150);
+
+        if (this.callbacks.onCameraToggle) {
+          this.callbacks.onCameraToggle();
+        }
+      };
+
+      camBtn.addEventListener('touchstart', handleCam, { passive: false });
+      camBtn.addEventListener('click', handleCam);
+    }
+
+    // --- 5. Pause Button ---
+    if (pauseBtn) {
+      const handlePause = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        this.lastTouchTime = Date.now();
+        pauseBtn.classList.add('active');
+        setTimeout(() => pauseBtn.classList.remove('active'), 150);
+
+        if (this.callbacks.onPause) {
+          this.callbacks.onPause();
+        }
+      };
+
+      pauseBtn.addEventListener('touchstart', handlePause, { passive: false });
+      pauseBtn.addEventListener('click', handlePause);
+    }
+
+    // --- 6. Restart Level Button ---
+    if (restartBtn) {
+      const handleRestart = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        this.lastTouchTime = Date.now();
+        restartBtn.classList.add('active');
+        setTimeout(() => restartBtn.classList.remove('active'), 150);
+
+        if (this.callbacks.onRestart) {
+          this.callbacks.onRestart();
+        }
+      };
+
+      restartBtn.addEventListener('touchstart', handleRestart, { passive: false });
+      restartBtn.addEventListener('click', handleRestart);
     }
   }
 

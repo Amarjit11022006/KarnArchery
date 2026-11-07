@@ -50,6 +50,7 @@ export class Arrow {
     
     this.isFlying = false;
     this.hasHit = false;
+    this.isDropped = false;
     this.flightTime = 0;
     this.bowType = bowType;
     this.inUse = false;
@@ -148,12 +149,17 @@ export class Arrow {
     const embedDepth = 0.08;
     const arrowDir = new THREE.Vector3(0, 0, 1).applyQuaternion(this.mesh.quaternion);
     this.position.copy(hitPoint).addScaledVector(arrowDir, embedDepth);
+    if (this.isDropped) {
+      // Keep dropped arrow slightly above terrain level
+      this.position.y = Math.max(0.04, this.position.y);
+    }
     this.mesh.position.copy(this.position);
   }
 
   reset() {
     this.isFlying = false;
     this.hasHit = false;
+    this.isDropped = false;
     this.flightTime = 0;
     this.inUse = false;
     this.velocity.set(0, 0, 0);

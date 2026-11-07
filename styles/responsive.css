@@ -1,18 +1,22 @@
 /* ==========================================================================
-   KARNARCHERY - Responsive & Mobile Controls Stylesheet
-   Ancient Indian / Mahabharata Royal UI Architecture
+   KARNARCHERY - Cross-Platform Responsive & Touch Controls Stylesheet
+   Mahabharata Royal UI Architecture - Optimized for Phones, Tablets, Laptops & PCs
    ========================================================================== */
 
-/* Mobile Touch Controls Overlay */
+/* ==========================================================================
+   1. MOBILE TOUCH CONTROLS OVERLAY
+   ========================================================================== */
+
 .mobile-controls {
-  display: none !important;
-  position: absolute;
+  display: none;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 6;
+  z-index: 15;
+  overflow: hidden;
 }
 
 .mobile-controls.hidden {
@@ -20,17 +24,186 @@
   pointer-events: none !important;
 }
 
-.mobile-controls:not(.hidden) {
-  display: block !important;
+/* STRICT DESKTOP/LAPTOP RULE:
+   On PCs & laptops with fine mouse pointer & hover, NEVER display mobile controls */
+@media (hover: hover) and (pointer: fine) and (min-width: 1025px) {
+  #mobile-controls,
+  .mobile-controls {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Touch Aiming Surface: Covers left & center viewport for smooth panning */
+.mobile-aim-zone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 65%;
+  height: 100%;
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* ==========================================================================
-   Ancient Royal Warrior Shield / Chakra Shoot Control
+   2. MOBILE TOP QUICK ACTION BAR (Cam, Restart, Pause)
    ========================================================================== */
-.mobile-shoot-btn {
+
+.mobile-top-bar {
   position: absolute;
-  bottom: 28px;
-  right: 28px;
+  top: max(14px, env(safe-area-inset-top));
+  right: max(14px, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  z-index: 16;
+}
+
+.mobile-quick-btn {
+  background: linear-gradient(135deg, rgba(32, 22, 14, 0.94) 0%, rgba(18, 12, 8, 0.98) 100%);
+  border: 1.5px solid var(--royal-gold);
+  border-radius: 6px;
+  color: var(--royal-gold-bright);
+  padding: 7px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: var(--font-title);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7), inset 0 1px 2px rgba(247, 215, 138, 0.3);
+  transition: transform 0.12s ease, filter 0.12s ease, background 0.12s ease;
+}
+
+.mobile-quick-btn .quick-icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+}
+
+.mobile-quick-btn:active,
+.mobile-quick-btn.active {
+  transform: scale(0.92);
+  filter: brightness(1.3);
+  border-color: #FFFFFF;
+  background: linear-gradient(135deg, #7D4F1E 0%, #4A2E10 100%);
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   3. MOBILE ACTION CLUSTER (Bottom-Right: Drop Arrow & Shoot)
+   ========================================================================== */
+
+.mobile-action-cluster {
+  position: absolute;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  right: max(22px, env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  pointer-events: auto;
+  z-index: 16;
+}
+
+/* --------------------------------------------------------------------------
+   DEDICATED DROP ARROW BUTTON (Mobile / Tablet Only)
+   Royal Mahabharata Crimson & Bronze styling
+   -------------------------------------------------------------------------- */
+.mobile-drop-btn {
+  width: 84px;
+  height: 52px;
+  border-radius: 8px;
+  background: radial-gradient(circle at 35% 35%, #56161B 0%, #3B0E12 55%, #200608 100%);
+  border: 2px solid var(--royal-gold);
+  color: var(--warm-ivory);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.85),
+              0 0 14px rgba(180, 30, 45, 0.5),
+              inset 0 1px 3px rgba(247, 215, 138, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--font-title);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Inner golden dash accent */
+.mobile-drop-btn::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border: 1px dashed rgba(247, 215, 138, 0.35);
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.mobile-drop-btn .drop-icon {
+  width: 17px;
+  height: 17px;
+  fill: var(--royal-gold-bright);
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.9));
+  transition: transform 0.12s ease, fill 0.12s ease;
+}
+
+.mobile-drop-btn:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.9), 0 0 18px rgba(229, 62, 62, 0.6);
+}
+
+.mobile-drop-btn:active,
+.mobile-drop-btn.active {
+  transform: scale(0.92);
+  filter: brightness(1.25);
+  background: radial-gradient(circle at 45% 45%, #7D1A22 0%, #4E0F14 60%, #28070A 100%);
+  border-color: #FFFFFF;
+  box-shadow: 0 0 20px rgba(255, 37, 37, 0.9), inset 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+.mobile-drop-btn:active .drop-icon,
+.mobile-drop-btn.active .drop-icon {
+  transform: translateY(2px);
+  fill: #FFFFFF;
+}
+
+.mobile-drop-btn.disabled,
+.mobile-drop-btn[disabled] {
+  opacity: 0.35 !important;
+  filter: grayscale(0.85) !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   DRAW / SHOOT CIRCULAR CHAKRA BUTTON
+   -------------------------------------------------------------------------- */
+.mobile-shoot-btn {
   width: 88px;
   height: 88px;
   border-radius: 50%;
@@ -40,7 +213,6 @@
               0 8px 24px rgba(0, 0, 0, 0.8),
               inset 0 2px 4px rgba(247, 215, 138, 0.5),
               inset 0 -3px 8px rgba(0, 0, 0, 0.9);
-  pointer-events: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -60,7 +232,6 @@
   overflow: hidden;
 }
 
-/* Concentric Etched Chakra Ring */
 .mobile-shoot-btn::before {
   content: '';
   position: absolute;
@@ -73,7 +244,6 @@
   pointer-events: none;
 }
 
-/* Inner Studded Ring */
 .mobile-shoot-btn::after {
   content: '';
   position: absolute;
@@ -86,14 +256,8 @@
   pointer-events: none;
 }
 
-.mobile-shoot-btn:hover {
-  box-shadow: 0 0 32px rgba(212, 166, 74, 0.75),
-              0 10px 28px rgba(0, 0, 0, 0.9),
-              inset 0 0 12px rgba(247, 215, 138, 0.4);
-  transform: scale(1.04);
-}
-
-.mobile-shoot-btn:active, .mobile-shoot-btn.active {
+.mobile-shoot-btn:active,
+.mobile-shoot-btn.active {
   transform: scale(0.92);
   filter: brightness(1.2);
   background: radial-gradient(circle at 45% 45%, #E2B95C 0%, #D4A64A 35%, #8C6022 80%, #382719 100%);
@@ -113,7 +277,8 @@
   z-index: 1;
 }
 
-.mobile-shoot-btn:active .shoot-icon, .mobile-shoot-btn.active .shoot-icon {
+.mobile-shoot-btn:active .shoot-icon,
+.mobile-shoot-btn.active .shoot-icon {
   fill: #170F0A;
 }
 
@@ -122,18 +287,8 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-.mobile-aim-zone {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 70%;
-  height: 100%;
-  pointer-events: auto;
-  touch-action: none;
-}
-
 /* ==========================================================================
-   Tablet Screens (<= 1024px)
+   4. TABLETS & COMPACT LAPTOPS (<= 1024px)
    ========================================================================== */
 @media (max-width: 1024px) {
   #menu-container {
@@ -153,7 +308,8 @@
     grid-template-columns: repeat(3, 1fr);
   }
   
-  .chapters-screen-grid, .levels-screen-grid {
+  .chapters-screen-grid,
+  .levels-screen-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 14px;
   }
@@ -166,22 +322,19 @@
     grid-template-columns: 1fr;
     gap: 16px;
   }
+
+  /* Hide cramped desktop keyboard action buttons in HUD on touch screens */
+  .hud-bottom-right {
+    display: none !important;
+  }
 }
 
 /* ==========================================================================
-   Mobile Screens (<= 768px)
+   5. MOBILE SMARTPHONES (<= 768px)
    ========================================================================== */
 @media (max-width: 768px) {
-  .mobile-controls.hidden {
-    display: none !important;
-  }
-  
-  .mobile-controls:not(.hidden) {
-    display: block !important;
-  }
-  
   #menu-container {
-    padding: 20px 24px;
+    padding: 20px 20px;
     align-items: center;
     text-align: center;
   }
@@ -238,64 +391,60 @@
   
   /* HUD Mobile Adjustments */
   #hud-container {
-    padding: 12px 14px;
+    padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   }
   
   .hud-top-bar {
     flex-direction: column;
     gap: 8px;
     align-items: stretch;
+    max-width: 72%;
   }
   
   .hud-mission-banner {
     max-width: 100%;
-    padding: 8px 14px;
+    padding: 6px 12px;
   }
 
   .mission-objective-text {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   .hud-score-panel {
     justify-content: space-around;
-    padding: 6px 14px;
-    gap: 14px;
+    padding: 6px 12px;
+    gap: 12px;
   }
 
   .hud-value-large {
-    font-size: 22px;
+    font-size: 20px;
   }
   
   .hud-bottom-bar {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 8px;
+    max-width: 65%;
   }
   
   .hud-bottom-left {
-    justify-content: space-between;
-    gap: 8px;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
-  .hud-wind-card, .hud-distance-card, .hud-quiver-card {
-    padding: 6px 10px;
-  }
-  
-  .hud-bottom-right {
-    justify-content: space-between;
-  }
-
-  .hud-action-btn {
-    padding: 8px 12px;
+  .hud-wind-card,
+  .hud-distance-card,
+  .hud-quiver-card {
+    padding: 5px 8px;
     font-size: 10px;
-    letter-spacing: 1px;
   }
   
   .chapters-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .chapters-screen-grid, .levels-screen-grid {
+  .chapters-screen-grid,
+  .levels-screen-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
@@ -315,6 +464,7 @@
 
   .modal-content {
     padding: 24px 20px;
+    max-width: 92%;
   }
 
   .modal-title {
@@ -323,7 +473,7 @@
 }
 
 /* ==========================================================================
-   Small Phones (<= 480px)
+   6. SMALL PHONES (<= 480px)
    ========================================================================== */
 @media (max-width: 480px) {
   .game-title {
@@ -331,11 +481,9 @@
     letter-spacing: 3px;
   }
 
-  .chapters-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .chapters-screen-grid, .levels-screen-grid {
+  .chapters-grid,
+  .chapters-screen-grid,
+  .levels-screen-grid {
     grid-template-columns: 1fr;
   }
 
@@ -346,12 +494,101 @@
   .mobile-shoot-btn {
     width: 76px;
     height: 76px;
-    bottom: 20px;
-    right: 20px;
+    font-size: 10px;
+  }
+
+  .mobile-drop-btn {
+    width: 74px;
+    height: 46px;
+    font-size: 9px;
+  }
+
+  .mobile-quick-btn {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .mobile-quick-btn .quick-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .mobile-action-cluster {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    right: max(16px, env(safe-area-inset-right));
+    gap: 10px;
   }
 }
 
-/* Portrait Warning on Mobile Devices */
+/* ==========================================================================
+   7. LANDSCAPE MOBILE LAYOUTS (HEIGHT <= 500px)
+   Optimized for gaming phones held horizontally
+   ========================================================================== */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-action-cluster {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    right: max(14px, env(safe-area-inset-right));
+    gap: 8px;
+  }
+
+  .mobile-shoot-btn {
+    width: 72px;
+    height: 72px;
+    font-size: 10px;
+  }
+
+  .mobile-drop-btn {
+    width: 72px;
+    height: 42px;
+    font-size: 9px;
+  }
+
+  .mobile-top-bar {
+    top: max(8px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    gap: 6px;
+  }
+
+  .mobile-quick-btn {
+    padding: 4px 8px;
+    font-size: 9px;
+  }
+
+  .hud-top-bar {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .hud-mission-banner {
+    padding: 4px 8px;
+  }
+
+  .hud-score-panel {
+    padding: 4px 8px;
+  }
+
+  .hud-bottom-bar {
+    bottom: 8px;
+  }
+
+  #menu-container {
+    padding: 16px 24px;
+  }
+
+  .game-title {
+    font-size: 26px;
+  }
+
+  .brand-logo-img {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+/* ==========================================================================
+   8. PORTRAIT MODE SOFT HINT
+   Non-blocking guidance recommending landscape for gameplay
+   ========================================================================== */
 @media (max-width: 600px) and (orientation: portrait) {
   .portrait-hint {
     display: block;
@@ -362,13 +599,13 @@
     background: linear-gradient(135deg, rgba(23, 15, 10, 0.96) 0%, rgba(17, 26, 39, 0.98) 100%);
     border: 1px solid var(--royal-gold);
     color: var(--royal-gold-bright);
-    padding: 8px 18px;
+    padding: 6px 14px;
     font-family: var(--font-title);
-    font-size: 11px;
-    letter-spacing: 1.5px;
+    font-size: 10px;
+    letter-spacing: 1.2px;
     z-index: 100;
     pointer-events: none;
-    border-radius: 2px;
+    border-radius: 4px;
     text-align: center;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.9), 0 0 12px rgba(212, 166, 74, 0.3);
   }

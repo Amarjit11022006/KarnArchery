@@ -67,6 +67,10 @@ export class Game {
         this.gameplay.onCancelDraw();
         this.ui.updateDrawPower(0);
       },
+      onDropArrow: () => {
+        this.gameplay.onDropArrow();
+        this.ui.updateDrawPower(0);
+      },
       onCameraToggle: () => this.toggleCamera(),
       onRestart: () => this.restartCurrentLevel(),
       onPause: () => this.togglePause(),
@@ -122,6 +126,13 @@ export class Game {
     const newMode = this.gameplay.toggleCamera();
     this.ui.setCameraModeLabel(newMode);
     return newMode;
+  }
+
+  dropArrow() {
+    if (this.gameplay) {
+      this.gameplay.onDropArrow();
+      this.ui.updateDrawPower(0);
+    }
   }
 
   restartCurrentLevel() {

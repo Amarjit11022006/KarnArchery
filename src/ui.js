@@ -251,10 +251,24 @@ export class UIManager {
 
   openModal(modal) {
     if (modal) modal.classList.add('active');
+    if (modal === this.pauseModal || modal === this.resultModal) {
+      const dropBtn = document.getElementById('mobile-drop-btn');
+      if (dropBtn) {
+        dropBtn.disabled = true;
+        dropBtn.classList.add('disabled');
+      }
+    }
   }
 
   closeModal(modal) {
     if (modal) modal.classList.remove('active');
+    if (modal === this.pauseModal) {
+      const dropBtn = document.getElementById('mobile-drop-btn');
+      if (dropBtn && scoring.getArrowsRemaining() > 0) {
+        dropBtn.disabled = false;
+        dropBtn.classList.remove('disabled');
+      }
+    }
   }
 
   updateStatusFooter() {
@@ -376,6 +390,18 @@ export class UIManager {
     }
     if (this.hudArrowCount) {
       this.hudArrowCount.textContent = `${remaining} / ${total} Remaining`;
+    }
+
+    // Update Mobile Drop Arrow button state
+    const dropBtn = document.getElementById('mobile-drop-btn');
+    if (dropBtn) {
+      if (remaining <= 0) {
+        dropBtn.disabled = true;
+        dropBtn.classList.add('disabled');
+      } else {
+        dropBtn.disabled = false;
+        dropBtn.classList.remove('disabled');
+      }
     }
   }
 

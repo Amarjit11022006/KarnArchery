@@ -9,6 +9,7 @@ import { chapterManager } from './chapterManager.js';
 import { levelManager } from './levelManager.js';
 import { storage } from './storage.js';
 import { audio } from './audio.js';
+import { isMobileOrTablet } from './deviceDetection.js';
 
 export class NavigationManager {
   constructor(game) {
@@ -247,6 +248,30 @@ export class NavigationManager {
         this.closeModal(this.confirmResetModal);
       });
     }
+
+    // Dynamic responsive listeners for mobile controls visibility
+    window.addEventListener('resize', () => {
+      this.updateMobileControlsVisibility();
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => this.updateMobileControlsVisibility(), 150);
+    });
+  }
+
+  updateMobileControlsVisibility(state = gameState.current) {
+    const mobileControls = document.getElementById('mobile-controls');
+    if (!mobileControls) return;
+
+    const isGameplay = (state === STATES.PLAYING || state === STATES.TRAINING);
+    const showMobile = isGameplay && isMobileOrTablet();
+
+    if (showMobile) {
+      mobileControls.classList.remove('hidden');
+      mobileControls.style.display = 'block';
+    } else {
+      mobileControls.classList.add('hidden');
+      mobileControls.style.display = 'none';
+    }
   }
 
   confirmAndResetGame() {
@@ -269,12 +294,7 @@ export class NavigationManager {
     if (this.screenLevels) this.screenLevels.classList.add('hidden');
     if (this.hudContainer) this.hudContainer.classList.add('hidden');
 
-    const mobileControls = document.getElementById('mobile-controls');
-    if (mobileControls) {
-      const isMobile = window.innerWidth <= 768;
-      const isGameplay = (newState === STATES.PLAYING || newState === STATES.TRAINING);
-      mobileControls.style.display = (isMobile && isGameplay) ? 'block' : 'none';
-    }
+    this.updateMobileControlsVisibility(newState);
 
     switch (newState) {
       case STATES.HOME:

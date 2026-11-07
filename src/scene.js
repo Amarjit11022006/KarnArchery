@@ -52,6 +52,7 @@ export class SceneManager {
 
     this.handleResize = this.handleResize.bind(this);
     window.addEventListener('resize', this.handleResize);
+    window.addEventListener('orientationchange', () => setTimeout(this.handleResize, 150));
   }
 
   setQuality(level = 'high') {

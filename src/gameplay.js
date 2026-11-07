@@ -227,6 +227,49 @@ export class GameplayEngine {
     }
   }
 
+  /**
+   * Drops the currently held arrow naturally under gravity from archer's hand.
+   * Counts as a miss/shot, never hits the target, and embeds in the ground.
+   */
+  onDropArrow() {
+    if (scoring.getArrowsRemaining() <= 0 && !this.isTrainingMode) return;
+
+    // Reset character draw animation and bow string tension
+    this.archer.animator.setState('idle');
+    this.archer.animator.setDrawAmount(0);
+    this.archer.bow.updateStringPoints(0);
+    this.archer.setNockedArrow(false, 0);
+
+    // Audio cue for dropping arrow
+    if (audio.playArrowDrop) {
+      audio.playArrowDrop();
+    } else {
+      audio.playArrowRelease();
+    }
+
+    // Launch origin from archer hand
+    const launchOrigin = this.archer.getArrowLaunchOrigin();
+
+    // Natural downward drop velocity: slight random lateral jitter, downward -1.6 m/s, forward 0.8 m/s
+    const dropVel = new THREE.Vector3(
+      (Math.random() - 0.5) * 0.12,
+      -1.6,
+      0.8
+    );
+
+    const arrow = this.arrowPool.getArrow();
+    arrow.isDropped = true; // Crucial: marked as dropped arrow
+    arrow.launch(launchOrigin, dropVel.clone().normalize(), dropVel.length());
+    this.activeArrows.push(arrow);
+
+    // Record shot in scoring system
+    scoring.recordShot();
+
+    if (this.callbacks.onShotFired) {
+      this.callbacks.onShotFired(scoring.getArrowsRemaining(), scoring.arrowsTotal);
+    }
+  }
+
   toggleCamera() {
     const newMode = this.cameraManager.toggleMode();
     return newMode;
@@ -319,8 +362,8 @@ export class GameplayEngine {
       const step = physics.updateArrow(arrow, dt, bowResistance);
       if (!step) continue;
 
-      // Target Collision
-      if (this.currentTarget && !arrow.hasHit) {
+      // Target Collision - STRICTLY EXCLUDE dropped arrows
+      if (this.currentTarget && !arrow.hasHit && !arrow.isDropped) {
         const hitResult = physics.checkTargetCollision(step.from, step.to, this.currentTarget);
 
         if (hitResult) {
@@ -350,11 +393,23 @@ export class GameplayEngine {
       const groundHit = physics.checkGroundCollision(step.from, step.to, 0);
       if (groundHit && !arrow.hasHit) {
         arrow.attachToGround(groundHit.point);
-        audio.playTargetImpact(false);
+        if (arrow.isDropped) {
+          if (audio.playArrowDrop) audio.playArrowDrop();
+          else audio.playTargetImpact(false);
+        } else {
+          audio.playTargetImpact(false);
+        }
         const missInfo = scoring.recordMiss();
 
         if (this.callbacks.onScoreMiss) {
           this.callbacks.onScoreMiss(missInfo);
+        }
+
+        // Clean up dropped arrow after brief stay on ground
+        if (arrow.isDropped) {
+          setTimeout(() => {
+            arrow.reset();
+          }, 3000);
         }
 
         this.checkEndOfLevel();

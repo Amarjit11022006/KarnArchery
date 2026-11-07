@@ -310,6 +310,48 @@ class AudioManager {
   }
 
   /**
+   * Dropped Arrow Ground Clatter / Subtle Thud
+   */
+  playArrowDrop() {
+    if (!this.ctx) return;
+    this.resume();
+    const now = this.ctx.currentTime;
+
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(140, now);
+    osc.frequency.exponentialRampToValueAtTime(45, now + 0.16);
+
+    gain.gain.setValueAtTime(0.28, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+
+    osc.start(now);
+    osc.stop(now + 0.22);
+
+    // Subtle wooden rattle noise
+    try {
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.09);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.25));
+      }
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      const noiseGain = this.ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.2, now);
+      noise.connect(noiseGain);
+      noiseGain.connect(this.sfxGain);
+      noise.start(now);
+    } catch (err) {}
+  }
+
+  /**
    * Bullseye Golden Divine Chime / Temple Bell
    */
   playBullseyeChime() {
