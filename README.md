@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # KarnArchery (कर्ण धनुर्विद्या)
 ### 3D Mythological Archery Browser Game
 
@@ -122,3 +123,7 @@ The generated `dist/` folder can be hosted on any static hosting provider:
 ## 📜 Asset Credits & Attribution
 
 See [docs/ASSET_CREDITS.md](./docs/ASSET_CREDITS.md) for detailed documentation of concept art, audio synthesis, and procedural 3D model geometry.
+=======
+# KarnArchery
+KarnArchery is a 3D mythological archery game inspired by the Mahabharata era, featuring realistic warriors, immersive environments, challenging levels and thrilling bow-and-arrow gameplay.
+>>>>>>> 00acd8d6a742816561c0364f5fe26d52221d10de
