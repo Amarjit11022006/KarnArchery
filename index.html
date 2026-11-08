@@ -34,8 +34,32 @@
     <!-- Floating Score Popups Container -->
     <div id="score-popup-container" class="score-popup-container"></div>
 
-    <!-- Portrait orientation warning for mobile -->
+    <!-- Portrait orientation warning for mobile (soft hint for menus) -->
     <div class="portrait-hint">Landscape mode recommended for best archery experience 🏹</div>
+
+    <!-- ====================================================================
+         MOBILE LANDSCAPE ORIENTATION ENFORCEMENT OVERLAY
+         Displayed during gameplay if mobile/tablet is held in Portrait
+         ==================================================================== -->
+    <div id="rotate-device-overlay" class="rotate-device-overlay hidden">
+      <div class="rotate-card ornate-border">
+        <div class="rotate-icon-container">
+          <svg class="rotate-phone-svg" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect class="phone-frame" x="24" y="12" width="32" height="56" rx="6" stroke="#D4A64A" stroke-width="3" fill="#170F0A"/>
+            <line x1="33" y1="18" x2="47" y2="18" stroke="#F7D78A" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="40" cy="60" r="3" fill="#F7D78A"/>
+            <path class="rotate-arrow-cw" d="M14 36 C14 20 24 12 38 12" stroke="#B52B35" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 3"/>
+            <polygon points="10,34 14,42 19,35" fill="#B52B35"/>
+            <path class="rotate-arrow-ccw" d="M66 44 C66 60 56 68 42 68" stroke="#D4A64A" stroke-width="3" stroke-linecap="round" stroke-dasharray="3 3"/>
+            <polygon points="70,46 66,38 61,45" fill="#D4A64A"/>
+          </svg>
+        </div>
+        <div class="rotate-badge">WARRIOR BATTLEFIELD</div>
+        <h2 class="rotate-heading">LANDSCAPE MODE REQUIRED</h2>
+        <p class="rotate-instructions">Please rotate your device to <strong>Landscape Mode</strong> to play KarnArchery.</p>
+        <div class="rotate-subtext">Mahabharata Royal Archery is engineered for horizontal combat</div>
+      </div>
+    </div>
 
     <!-- ====================================================================
          CINEMATIC LOADING SCREEN

@@ -1,7 +1,7 @@
 /**
  * KarnArchery - Cross-Platform Device Detection & Responsive Utilities
  * Accurately detects mobile phones, tablets, laptops, and desktop PCs.
- * Uses pointer types, touch points, hover capabilities, viewport metrics, and userAgent.
+ * Supports Capacitor Screen Orientation Plugin (Android APK) and Web APIs.
  */
 
 export function isMobileOrTablet() {
@@ -49,6 +49,88 @@ export function isTouchScreen() {
 
 export function isPortrait() {
   if (typeof window === 'undefined') return false;
-  return window.innerHeight > window.innerWidth;
+
+  // 1. Screen Orientation API check
+  if (window.screen && window.screen.orientation && window.screen.orientation.type) {
+    return window.screen.orientation.type.startsWith('portrait');
+  }
+
+  // 2. Legacy window.orientation check
+  if (typeof window.orientation === 'number') {
+    return window.orientation === 0 || window.orientation === 180;
+  }
+
+  // 3. Viewport dimension fallback
+  const width = window.innerWidth || 1280;
+  const height = window.innerHeight || 720;
+  return height > width;
 }
 
+/**
+ * Lock device screen orientation to Landscape mode
+ * Supports Capacitor Screen Orientation Plugin (Android APK) and Web APIs
+ */
+export async function lockToLandscape() {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Capacitor Screen Orientation API (Android APK)
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ScreenOrientation) {
+      await window.Capacitor.Plugins.ScreenOrientation.lock({ orientation: 'landscape' });
+      return true;
+    }
+  } catch (err) {
+    console.debug('Capacitor screen orientation lock failed:', err);
+  }
+
+  // 2. Standard Web Screen Orientation API
+  try {
+    if (window.screen && window.screen.orientation && typeof window.screen.orientation.lock === 'function') {
+      await window.screen.orientation.lock('landscape');
+      return true;
+    } else if (window.screen && typeof window.screen.lockOrientation === 'function') {
+      window.screen.lockOrientation('landscape');
+      return true;
+    } else if (window.screen && typeof window.screen.mozLockOrientation === 'function') {
+      window.screen.mozLockOrientation('landscape');
+      return true;
+    } else if (window.screen && typeof window.screen.msLockOrientation === 'function') {
+      window.screen.msLockOrientation('landscape');
+      return true;
+    }
+  } catch (err) {
+    console.debug('Web screen orientation lock unsupported or requires fullscreen gesture:', err);
+  }
+
+  return false;
+}
+
+/**
+ * Unlock device screen orientation back to default / user control
+ */
+export async function unlockOrientation() {
+  if (typeof window === 'undefined') return false;
+
+  // 1. Capacitor Screen Orientation API
+  try {
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.ScreenOrientation) {
+      await window.Capacitor.Plugins.ScreenOrientation.unlock();
+      return true;
+    }
+  } catch (err) {
+    console.debug('Capacitor screen orientation unlock failed:', err);
+  }
+
+  // 2. Standard Web Screen Orientation API
+  try {
+    if (window.screen && window.screen.orientation && typeof window.screen.orientation.unlock === 'function') {
+      window.screen.orientation.unlock();
+      return true;
+    } else if (window.screen && typeof window.screen.unlockOrientation === 'function') {
+      window.screen.unlockOrientation();
+      return true;
+    }
+  } catch (err) {}
+
+  return false;
+}

@@ -586,8 +586,138 @@
 }
 
 /* ==========================================================================
-   8. PORTRAIT MODE SOFT HINT
-   Non-blocking guidance recommending landscape for gameplay
+   8. MOBILE ROTATE DEVICE OVERLAY (Landscape Enforcement During Gameplay)
+   ========================================================================== */
+.rotate-device-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  width: 100dvw;
+  height: 100dvh;
+  background: radial-gradient(circle at center, rgba(30, 20, 14, 0.98) 0%, rgba(16, 10, 6, 0.99) 65%, rgba(5, 8, 14, 1.0) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: opacity 0.25s ease;
+}
+
+.rotate-device-overlay.hidden {
+  display: none !important;
+  opacity: 0;
+  pointer-events: none !important;
+}
+
+/* Strict Desktop PC / Laptop rule: NEVER display rotate overlay on desktop/laptop */
+@media (hover: hover) and (pointer: fine) and (min-width: 1025px) {
+  #rotate-device-overlay,
+  .rotate-device-overlay {
+    display: none !important;
+    pointer-events: none !important;
+  }
+}
+
+.rotate-card {
+  max-width: 380px;
+  width: 90%;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(180deg, rgba(37, 25, 16, 0.95) 0%, rgba(23, 15, 10, 0.98) 100%);
+  border: 2px solid var(--royal-gold);
+  border-radius: 6px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9),
+              0 0 30px rgba(212, 166, 74, 0.3),
+              inset 0 1px 3px rgba(247, 215, 138, 0.4);
+}
+
+.rotate-icon-container {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes rotatePhonePrompt {
+  0%, 15% {
+    transform: rotate(0deg);
+  }
+  50%, 75% {
+    transform: rotate(90deg);
+  }
+  90%, 100% {
+    transform: rotate(0deg);
+  }
+}
+
+.rotate-phone-svg {
+  width: 80px;
+  height: 80px;
+  filter: drop-shadow(0 0 16px rgba(212, 166, 74, 0.55));
+  animation: rotatePhonePrompt 2.5s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+.rotate-badge {
+  font-family: var(--font-title);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--royal-gold-bright);
+  background: rgba(142, 32, 40, 0.6);
+  border: 1px solid var(--crimson-bright);
+  border-radius: 12px;
+  padding: 4px 12px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.rotate-heading {
+  font-family: var(--font-title);
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--royal-gold-bright);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(212, 166, 74, 0.5);
+}
+
+.rotate-instructions {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--warm-ivory);
+  margin-bottom: 14px;
+}
+
+.rotate-instructions strong {
+  color: #FFFFFF;
+  text-shadow: 0 0 8px rgba(247, 215, 138, 0.6);
+}
+
+.rotate-subtext {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--ivory-muted);
+  letter-spacing: 0.8px;
+  border-top: 1px solid rgba(212, 166, 74, 0.25);
+  padding-top: 10px;
+  width: 100%;
+}
+
+/* ==========================================================================
+   9. PORTRAIT MODE SOFT HINT (For Menu screens only)
    ========================================================================== */
 @media (max-width: 600px) and (orientation: portrait) {
   .portrait-hint {

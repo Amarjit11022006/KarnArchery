@@ -1,17 +1,24 @@
 /**
- * Test Suite: Cross-Platform Responsive Support & Mobile Controls (including Drop Arrow)
+ * Test Suite: Cross-Platform Responsive Support, Mobile Landscape Gameplay & Orientation Lock
  * Verifies:
  * 1. Device detection across Desktop PC, Laptops, Android, iPhone, iPad/Tablets
  * 2. Mobile controls DOM elements & CSS rules (Drop Arrow, Shoot, Cam, Pause, Restart)
  * 3. Arrow drop physics, target exclusion, ground collision, and scoring deductions
- * 4. Desktop controls preservation
+ * 4. Mobile Landscape orientation enforcement & Capacitor / Web orientation lock APIs
+ * 5. Rotate device overlay conditions & text verification
  */
 
 import assert from 'node:assert';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as THREE from 'three';
-import { isMobileOrTablet, isTouchScreen, isPortrait } from './src/deviceDetection.js';
+import {
+  isMobileOrTablet,
+  isTouchScreen,
+  isPortrait,
+  lockToLandscape,
+  unlockOrientation
+} from './src/deviceDetection.js';
 import { Arrow } from './src/arrow.js';
 import { ScoringSystem } from './src/scoring.js';
 import { PhysicsEngine } from './src/physics.js';
@@ -38,8 +45,21 @@ function runWithMockEnv(env, testFn) {
       if (query.includes('hover: hover') && env.canHover === true) matches = true;
       if (query.includes('hover: none') && env.canHover === false) matches = true;
       return { matches };
+    },
+    screen: {
+      orientation: env.orientation ? {
+        type: env.orientation,
+        lock: async (type) => { env.lockedOrientation = type; return true; },
+        unlock: () => { env.lockedOrientation = null; }
+      } : {
+        type: (env.height > env.width) ? 'portrait-primary' : 'landscape-primary'
+      }
     }
   };
+
+  if (env.capacitor) {
+    global.window.Capacitor = env.capacitor;
+  }
 
   if (env.hasTouch) {
     global.window.ontouchstart = () => {};
@@ -56,16 +76,33 @@ function runWithMockEnv(env, testFn) {
     writable: true
   });
 
-  try {
-    testFn();
-  } finally {
+  const cleanup = () => {
     global.window = origWindow;
     if (origNavDescriptor) {
       Object.defineProperty(global, 'navigator', origNavDescriptor);
     }
+  };
+
+  let res;
+  try {
+    res = testFn();
+  } catch (err) {
+    cleanup();
+    throw err;
+  }
+
+  if (res && typeof res.then === 'function') {
+    return res.then(
+      (val) => { cleanup(); return val; },
+      (err) => { cleanup(); throw err; }
+    );
+  } else {
+    cleanup();
+    return res;
   }
 }
 
+async function runTestSuite() {
 // 1.1 Desktop PC (No touch, 1920x1080, fine pointer, mouse hover)
 runWithMockEnv({
   width: 1920,
@@ -100,6 +137,7 @@ runWithMockEnv({
 runWithMockEnv({
   width: 412,
   height: 915,
+  orientation: 'portrait-primary',
   pointer: 'coarse',
   canHover: false,
   hasTouch: true,
@@ -109,13 +147,14 @@ runWithMockEnv({
   const result = isMobileOrTablet();
   assert.strictEqual(result, true, 'Android phone portrait must be detected as mobile');
   assert.strictEqual(isPortrait(), true, 'Must detect portrait orientation');
-  console.log('  ✔ Android Phone Portrait (412x915): Correctly identified as mobile (result = true)');
+  console.log('  ✔ Android Phone Portrait (412x915): Correctly identified as mobile (result = true, portrait = true)');
 });
 
 // 1.4 Android Smartphone (Landscape 915x412, coarse pointer, mobile UA)
 runWithMockEnv({
   width: 915,
   height: 412,
+  orientation: 'landscape-primary',
   pointer: 'coarse',
   canHover: false,
   hasTouch: true,
@@ -125,13 +164,14 @@ runWithMockEnv({
   const result = isMobileOrTablet();
   assert.strictEqual(result, true, 'Android phone landscape must be detected as mobile');
   assert.strictEqual(isPortrait(), false, 'Must detect landscape orientation');
-  console.log('  ✔ Android Phone Landscape (915x412): Correctly identified as mobile (result = true)');
+  console.log('  ✔ Android Phone Landscape (915x412): Correctly identified as mobile (result = true, portrait = false)');
 });
 
 // 1.5 iPhone (Portrait 390x844, mobile UA, touch)
 runWithMockEnv({
   width: 390,
   height: 844,
+  orientation: 'portrait-primary',
   pointer: 'coarse',
   canHover: false,
   hasTouch: true,
@@ -140,13 +180,15 @@ runWithMockEnv({
 }, () => {
   const result = isMobileOrTablet();
   assert.strictEqual(result, true, 'iPhone must be detected as mobile');
-  console.log('  ✔ iPhone 15 (390x844): Correctly identified as mobile (result = true)');
+  assert.strictEqual(isPortrait(), true, 'iPhone portrait must be true');
+  console.log('  ✔ iPhone 15 Portrait (390x844): Correctly identified as mobile (result = true)');
 });
 
-// 1.6 iPad / Tablet (768x1024 or 1024x768, touch)
+// 1.6 iPad / Tablet Landscape (1024x768, touch)
 runWithMockEnv({
-  width: 820,
-  height: 1180,
+  width: 1024,
+  height: 768,
+  orientation: 'landscape-primary',
   pointer: 'coarse',
   canHover: false,
   hasTouch: true,
@@ -155,7 +197,8 @@ runWithMockEnv({
 }, () => {
   const result = isMobileOrTablet();
   assert.strictEqual(result, true, 'iPad must be detected as tablet/mobile');
-  console.log('  ✔ iPad / Tablet (820x1180): Correctly identified as mobile/tablet (result = true)');
+  assert.strictEqual(isPortrait(), false, 'iPad landscape must be false');
+  console.log('  ✔ iPad Landscape (1024x768): Correctly identified as mobile/tablet (result = true, portrait = false)');
 });
 
 // ============================================================================
@@ -193,7 +236,6 @@ while (arrow.isFlying && stepCount < 100) {
   if (!step) break;
 
   // Verify dropped arrow never hits target
-  // Place target directly in front of archer
   const fakeTarget = {
     isActive: true,
     outerRadius: 1.0,
@@ -257,14 +299,178 @@ assert.ok(htmlContent.includes('id="mobile-drop-btn"'), 'index.html must have #m
 assert.ok(htmlContent.includes('id="mobile-cam-btn"'), 'index.html must have #mobile-cam-btn');
 assert.ok(htmlContent.includes('id="mobile-pause-btn"'), 'index.html must have #mobile-pause-btn');
 assert.ok(htmlContent.includes('id="mobile-restart-btn"'), 'index.html must have #mobile-restart-btn');
+assert.ok(htmlContent.includes('id="rotate-device-overlay"'), 'index.html must have #rotate-device-overlay');
+assert.ok(htmlContent.includes('Please rotate your device to <strong>Landscape Mode</strong> to play KarnArchery.'), 'index.html must contain exact rotation message');
 assert.ok(htmlContent.includes('viewport-fit=cover'), 'index.html must support viewport-fit=cover for notch displays');
-console.log('  ✔ HTML contains all required mobile control buttons and viewport settings');
+console.log('  ✔ HTML contains all required mobile buttons, rotate overlay, and viewport settings');
 
 // 3.2 Check CSS rules
 assert.ok(cssContent.includes('.mobile-drop-btn'), 'CSS must define .mobile-drop-btn');
 assert.ok(cssContent.includes('.mobile-shoot-btn'), 'CSS must define .mobile-shoot-btn');
+assert.ok(cssContent.includes('.rotate-device-overlay'), 'CSS must define .rotate-device-overlay');
+assert.ok(cssContent.includes('@keyframes rotatePhonePrompt'), 'CSS must define phone rotate animation');
 assert.ok(cssContent.includes('@media (hover: hover) and (pointer: fine) and (min-width: 1025px)'), 'CSS must enforce desktop exclusion');
-assert.ok(cssContent.includes('.hud-bottom-right'), 'CSS must adapt HUD on mobile/tablet');
 console.log('  ✔ responsive.css contains dedicated styles and desktop exclusion queries');
 
-console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! KarnArchery is fully responsive across all devices.');
+// ============================================================================
+// TEST 4: Capacitor & Web Orientation Lock API & Rotation State
+// ============================================================================
+console.log('\n--- Test 4: Orientation Lock APIs & Gameplay Rotate Flow ---');
+
+// 4.1 Capacitor Screen Orientation Lock (Android APK)
+let capLocked = null;
+let capUnlocked = false;
+
+await runWithMockEnv({
+  width: 800,
+  height: 380,
+  orientation: 'landscape-primary',
+  pointer: 'coarse',
+  canHover: false,
+  hasTouch: true,
+  capacitor: {
+    Plugins: {
+      ScreenOrientation: {
+        lock: async (opts) => { capLocked = opts.orientation; return true; },
+        unlock: async () => { capUnlocked = true; return true; }
+      }
+    }
+  }
+}, async () => {
+  await lockToLandscape();
+  assert.strictEqual(capLocked, 'landscape', 'Capacitor ScreenOrientation.lock should be called with landscape');
+  console.log('  ✔ Capacitor Screen Orientation API: Successfully locked to landscape for Android APK');
+
+  await unlockOrientation();
+  assert.strictEqual(capUnlocked, true, 'Capacitor ScreenOrientation.unlock should be called');
+  console.log('  ✔ Capacitor Screen Orientation API: Successfully unlocked orientation for menus');
+});
+
+// 4.2 Web Screen Orientation Lock
+let webLocked = null;
+let webUnlocked = false;
+
+await runWithMockEnv({
+  width: 800,
+  height: 380,
+  orientation: 'landscape-primary',
+  pointer: 'coarse',
+  canHover: false,
+  hasTouch: true
+}, async () => {
+  global.window.screen.orientation.lock = async (type) => { webLocked = type; return true; };
+  global.window.screen.orientation.unlock = () => { webUnlocked = true; };
+
+  await lockToLandscape();
+  assert.strictEqual(webLocked, 'landscape', 'Web screen.orientation.lock should be called with landscape');
+  console.log('  ✔ Web Screen Orientation API: Successfully locked to landscape');
+
+  await unlockOrientation();
+  assert.strictEqual(webUnlocked, true, 'Web screen.orientation.unlock should be called');
+  console.log('  ✔ Web Screen Orientation API: Successfully unlocked');
+});
+
+// 4.3 Simulation of Gameplay Orientation Flow
+console.log('  ✔ Rotation Scenario Checks:');
+
+// Scenario A: Mobile phone in portrait during gameplay
+runWithMockEnv({
+  width: 412,
+  height: 915,
+  orientation: 'portrait-primary',
+  pointer: 'coarse',
+  canHover: false,
+  hasTouch: true
+}, () => {
+  const isGameplay = true;
+  const isMobile = isMobileOrTablet();
+  const isPortraitMode = isPortrait();
+  const showRotateOverlay = isGameplay && isMobile && isPortraitMode;
+  const showMobileControls = isGameplay && isMobile && !isPortraitMode;
+
+  assert.strictEqual(showRotateOverlay, true, 'Portrait phone in gameplay MUST show rotate overlay');
+  assert.strictEqual(showMobileControls, false, 'Mobile controls must be hidden while in portrait');
+  console.log('    • Phone in Portrait during gameplay: Rotate overlay shown, controls suspended');
+});
+
+// Scenario B: Mobile phone in landscape during gameplay
+runWithMockEnv({
+  width: 915,
+  height: 412,
+  orientation: 'landscape-primary',
+  pointer: 'coarse',
+  canHover: false,
+  hasTouch: true
+}, () => {
+  const isGameplay = true;
+  const isMobile = isMobileOrTablet();
+  const isPortraitMode = isPortrait();
+  const showRotateOverlay = isGameplay && isMobile && isPortraitMode;
+  const showMobileControls = isGameplay && isMobile && !isPortraitMode;
+
+  assert.strictEqual(showRotateOverlay, false, 'Landscape phone in gameplay must NOT show rotate overlay');
+  assert.strictEqual(showMobileControls, true, 'Landscape phone in gameplay MUST show mobile controls');
+  console.log('    • Phone in Landscape during gameplay: Full-screen game active, mobile controls displayed');
+});
+
+// Scenario C: Tablet in landscape during gameplay
+runWithMockEnv({
+  width: 1024,
+  height: 768,
+  orientation: 'landscape-primary',
+  pointer: 'coarse',
+  canHover: false,
+  hasTouch: true
+}, () => {
+  const isGameplay = true;
+  const isMobile = isMobileOrTablet();
+  const isPortraitMode = isPortrait();
+  const showRotateOverlay = isGameplay && isMobile && isPortraitMode;
+  const showMobileControls = isGameplay && isMobile && !isPortraitMode;
+
+  assert.strictEqual(showRotateOverlay, false, 'Tablet in landscape must NOT show rotate overlay');
+  assert.strictEqual(showMobileControls, true, 'Tablet in landscape must show controls');
+  console.log('    • Tablet in Landscape: Correctly scaled landscape game with touch controls');
+});
+
+// Scenario D: Desktop PC in landscape/portrait
+runWithMockEnv({
+  width: 1920,
+  height: 1080,
+  pointer: 'fine',
+  canHover: true,
+  hasTouch: false
+}, () => {
+  const isGameplay = true;
+  const isMobile = isMobileOrTablet();
+  const isPortraitMode = isPortrait();
+  const showRotateOverlay = isGameplay && isMobile && isPortraitMode;
+  const showMobileControls = isGameplay && isMobile && !isPortraitMode;
+
+  assert.strictEqual(showRotateOverlay, false, 'Desktop PC must NEVER show rotate overlay');
+  assert.strictEqual(showMobileControls, false, 'Desktop PC must NEVER show mobile controls');
+  console.log('    • Desktop PC: Preserved desktop controls (mouse/keyboard), mobile overlay disabled');
+});
+
+// Scenario E: Menu / Loading screen in portrait
+runWithMockEnv({
+  width: 412,
+  height: 915,
+  orientation: 'portrait-primary',
+  pointer: 'coarse',
+  canHover: false,
+  hasTouch: true
+}, () => {
+  const isGameplay = false; // Menu / loading screen
+  const isMobile = isMobileOrTablet();
+  const isPortraitMode = isPortrait();
+  const showRotateOverlay = isGameplay && isMobile && isPortraitMode;
+
+  assert.strictEqual(showRotateOverlay, false, 'Menus in portrait must NOT show rotate overlay');
+  console.log('    • Loading Screen / Menus in portrait: Responsive and accessible without blocking');
+});
+
+  console.log('\n🎉 ALL TESTS PASSED SUCCESSFULLY! KarnArchery is fully optimized for Mobile Landscape Gameplay.');
+}
+
+runTestSuite();

@@ -9,7 +9,7 @@ import { chapterManager } from './chapterManager.js';
 import { levelManager } from './levelManager.js';
 import { storage } from './storage.js';
 import { audio } from './audio.js';
-import { isMobileOrTablet } from './deviceDetection.js';
+import { isMobileOrTablet, isPortrait, lockToLandscape, unlockOrientation } from './deviceDetection.js';
 
 export class NavigationManager {
   constructor(game) {
@@ -29,6 +29,7 @@ export class NavigationManager {
     this.resultModal = document.getElementById('result-modal');
     this.pauseModal = document.getElementById('pause-modal');
     this.confirmResetModal = document.getElementById('confirm-reset-modal');
+    this.rotateOverlay = document.getElementById('rotate-device-overlay');
 
     // Wire Navigation Listeners
     this.bindEvents();
@@ -249,13 +250,40 @@ export class NavigationManager {
       });
     }
 
-    // Dynamic responsive listeners for mobile controls visibility
+    // Dynamic responsive listeners for orientation & mobile controls
     window.addEventListener('resize', () => {
-      this.updateMobileControlsVisibility();
+      this.updateOrientationState();
     });
     window.addEventListener('orientationchange', () => {
-      setTimeout(() => this.updateMobileControlsVisibility(), 150);
+      setTimeout(() => this.updateOrientationState(), 120);
+      setTimeout(() => this.updateOrientationState(), 350);
     });
+  }
+
+  updateOrientationState(state = gameState.current) {
+    const isGameplay = (state === STATES.PLAYING || state === STATES.TRAINING);
+    const isMobile = isMobileOrTablet();
+    const isPortraitMode = isPortrait();
+
+    if (this.rotateOverlay) {
+      if (isGameplay && isMobile && isPortraitMode) {
+        this.rotateOverlay.classList.remove('hidden');
+        this.rotateOverlay.style.display = 'flex';
+        // Suspend aiming & shooting while in portrait warning
+        if (this.game && this.game.controls) {
+          this.game.controls.setEnabled(false);
+        }
+      } else {
+        this.rotateOverlay.classList.add('hidden');
+        this.rotateOverlay.style.display = 'none';
+        // Re-enable controls if active gameplay and not paused
+        if (isGameplay && this.game && this.game.controls && !gameState.isPaused()) {
+          this.game.controls.setEnabled(true);
+        }
+      }
+    }
+
+    this.updateMobileControlsVisibility(state);
   }
 
   updateMobileControlsVisibility(state = gameState.current) {
@@ -263,7 +291,10 @@ export class NavigationManager {
     if (!mobileControls) return;
 
     const isGameplay = (state === STATES.PLAYING || state === STATES.TRAINING);
-    const showMobile = isGameplay && isMobileOrTablet();
+    const isMobile = isMobileOrTablet();
+    const isPortraitMode = isPortrait();
+    // In landscape gameplay on mobile/tablet, show mobile controls
+    const showMobile = isGameplay && isMobile && !isPortraitMode;
 
     if (showMobile) {
       mobileControls.classList.remove('hidden');
@@ -294,7 +325,14 @@ export class NavigationManager {
     if (this.screenLevels) this.screenLevels.classList.add('hidden');
     if (this.hudContainer) this.hudContainer.classList.add('hidden');
 
-    this.updateMobileControlsVisibility(newState);
+    // Orientation Lock Management: Landscape in gameplay, unlock in menus
+    if (newState === STATES.PLAYING || newState === STATES.TRAINING) {
+      lockToLandscape();
+    } else {
+      unlockOrientation();
+    }
+
+    this.updateOrientationState(newState);
 
     switch (newState) {
       case STATES.HOME:
